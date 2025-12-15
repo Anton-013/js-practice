@@ -1,0 +1,7 @@
+# .gitignore
+.env
+config.js
+secrets/
+keys/
+*.secret
+weather-app/config.js

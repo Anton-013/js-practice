@@ -1,0 +1,187 @@
+<!-- Практическое задание: "Консольный погодный мини-виджет"
+
+Используя публичный API OpenWeatherMap, напишите скрипт на XMLHttpRequest, который получает и выводит в консоль текущую погоду для любого города.
+
+Шаги:
+
+Получите бесплатный API-ключ:
+Зарегистрируйтесь на openweathermap.org/api (достаточно бесплатного тарифа "Current Weather Data"). Ключ придёт на email.
+
+Сделайте GET-запрос по адресу:
+
+text
+https://api.openweathermap.org/data/2.5/weather?q=Москва&appid=ВАШ_КЛЮЧ&units=metric&lang=ru
+Параметры:
+q — город (можно менять),
+units=metric — градусы Цельсия,
+lang=ru — описание погоды на русском.
+
+Требования к скрипту:
+
+Используйте XMLHttpRequest.
+
+Обработайте успешный ответ (onload):
+
+Распарсите JSON-ответ (xhr.response).
+
+Выведите в консоль:
+Город: [название]
+Температура: [темп]°C
+Погода: [описание]
+Влажность: [влажность]%
+
+Обработайте ошибки (onerror и HTTP-ошибки через xhr.status).
+
+(Опционально) Добавьте индикацию загрузки через onprogress.
+
+Пример вывода при успехе:
+
+text
+Город: Москва
+Температура: 12.5°C
+Погода: облачно с прояснениями
+Влажность: 65%
+Подсказка: Структура ответа API:
+
+json
+{
+  "name": "Москва",
+  "main": { "temp": 12.5, "humidity": 65 },
+  "weather": [ { "description": "облачно с прояснениями" } ]
+}
+Цель задания: закрепить цикл new XMLHttpRequest() → open() → send() → обработка onload/onerror, работу с JSON-ответом и параметрами URL. -->
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Практика XMLHttpRequest</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        .container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+        }
+
+        .progress {
+            margin-top: 20px;
+            padding: 15px;
+            background: #504b88;
+            border: 1px solid #ddd;
+        }
+
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ff0000;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script src="config.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Практика XMLHttpRequest</h1>
+        <button id="loadData">Загрузить данные</button>
+        <div id="progress" class="progress">
+            Результат появится здесь
+        </div>
+        <div id="output" class="output">
+            Результат появится здесь
+        </div>
+        <div id="error" class="error" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loadData').addEventListener('click', function () {
+            const outputDiv = document.getElementById('output')
+            const errorDiv = document.getElementById('error')
+            const progressDiv = document.getElementById('progress')
+
+            outputDiv.textContent = 'Запрос отправляется...'
+            errorDiv.style.display = 'none'
+            progressDiv.style.display = 'block'
+
+            const apiKey = API_KEY // подставте свой ключ
+            const city = 'Москва'
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=ru`
+
+            // создаем запрос
+            let xhr = new XMLHttpRequest()
+
+            // настраиваем запрос
+            xhr.open('GET', url)
+            xhr.responseType = 'json'
+
+            // отправляем
+            xhr.send()
+
+            // обрабатываем прогресс
+            xhr.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    const procent = Math.round((event.loaded / event.total) * 100)
+                    progressDiv.textContent = `Загружено: ${procent}`
+                }
+            }
+
+            // обработка успешного ответа
+            xhr.onload = function () {
+                progressDiv.style.display = 'none'
+                if (xhr.status === 200) {
+                    let data = xhr.response
+
+                    const output = `
+Город: ${data.name}<br>
+Температура: ${data.main.temp}<br>
+Погода: ${data.weather[0].description}<br>
+Влажность: ${data.main.humidity}%
+`
+                    outputDiv.innerHTML = output
+                } else {
+                    errorDiv.style.display = 'block'
+                    errorDiv.innerHTML = `Запрос завершился с ошибкой.<br>Обратитесь к администратору!<br>Ошибка HTTP: ${xhr.status} ${xhr.statusText}`
+                }
+            }
+
+            // обработка ошибок сети
+            xhr.onerror = function () {
+                progressDiv.style.display = 'none'
+                outputDiv.innerHTML = `Ошибка сети`
+                errorDiv.innerHTML = 'Ошибка сети: не удалось установить соединение'
+                errorDiv.style.display = 'block'
+            }
+
+            // обработка при превышении времени ожидания
+            xhr.timeout = 10000
+            xhr.ontimeout = function () {
+                progressDiv.style.display = 'none'
+                errorDiv.innerHTML = 'Превышено время ожидания ответа от сервера'
+                errorDiv.style.display = 'block'
+                outputDiv.innerHTML = 'Запрос отменен по таймауту'
+            }
+        })
+    </script>
+</body>
+
+</html>
