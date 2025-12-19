@@ -3,9 +3,29 @@
 // в него не приходят ни какие данный, в цепочку промисов его можно ставить в любом месте и несколько штук
 // основная задача finally это мутация глобальных переменных или глобального стейта
 // если в finally произойдет ошибка то следующий промис за ним удаляется и вместо него идет новый промис в состоянии reject
-Promise.resolve(10)
-    .then(console.log)
-    .catch(console.log)
-    .finally(() => {
-        console.log('finelly')
-    })
+// Promise.resolve(10)
+//     .then(console.log)
+//     .catch(console.log)
+//     .finally(() => {
+//         console.log('finelly')
+//     })
+
+// асинхронной может быть только функция
+// при добавлении ключевого слова async в функции происходит 2 важных изменения:
+// 1) такая функция всегда начинает возвращать промис
+// 2) такая функция начинает работать в асинхронном режиме, после того как будет использованно ключевое слово await
+console.log('start')
+async function f() { // f = async() => {}
+    try {
+        console.log('start F')
+        const response = await new Promise((res, rej) => {
+            res('!!!!')
+        })
+        console.log('middle')
+    } catch (e) {
+        console.log('!!!! e ', e)
+    }
+}
+
+f()
+console.log('end')
